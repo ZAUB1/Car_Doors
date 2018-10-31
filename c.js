@@ -47,7 +47,7 @@ setTick(() => {
 
                     if (IsControlJustPressed(1, 38))
                     {
-                        SetPedIntoVehicle(ped, veh, i - 1);
+                        TaskEnterVehicle(ped, veh, 10000, i - 1, 1.0, 1, 0);
                     }
                 }
             }
