@@ -1,5 +1,3 @@
-const types = [70, 71, 3, 4098, 4099, 8194, 16386];
-
 const names = [
     "avant droite",
     "arrière gauche",
@@ -26,17 +24,15 @@ MyClosestVehicle = function(x, y, z, radius)
 {
     for (let i = 1; i < 72; i++)
     {
-        let coords = GetEntityCoords(PlayerPedId());
-
         const angle = (i * 5) * Math.PI / 180;
 
         const sx = (50.0 * Math.cos(angle)) + x;
         const sy = (50.0 * Math.sin(angle)) + y;
 
-        const endX = x - (sx - x);
-        const endY = y - (sy - y);
+        const ex = x - (sx - x);
+        const ey = y - (sy - y);
 
-        const rayHandle = StartShapeTestCapsule(sx, sy, z, endX, endY, z, radius, 10, PlayerPedId(), 1000);
+        const rayHandle = StartShapeTestCapsule(sx, sy, z, ex, ey, z, radius, 10, PlayerPedId(), 1000);
 
         const ent = GetShapeTestResult(rayHandle, false)[4];
 
