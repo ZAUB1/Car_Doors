@@ -22,33 +22,52 @@ HelpText = function(msg)
     }
 }
 
+MyClosestVehicle = function(x, y, z, radius)
+{
+    for (let i = 1; i < 72; i++)
+    {
+        let coords = GetEntityCoords(PlayerPedId());
+
+        const angle = (i * 5) * Math.PI / 180;
+
+        const sx = (50.0 * Math.cos(angle)) + x;
+        const sy = (50.0 * Math.sin(angle)) + y;
+
+        const endX = x - (sx - x);
+        const endY = y - (sy - y);
+
+        const rayHandle = StartShapeTestCapsule(sx, sy, z, endX, endY, z, radius, 10, PlayerPedId(), 1000);
+
+        const ent = GetShapeTestResult(rayHandle, false)[4];
+
+        return ent;
+    }
+}
+
 setTick(() => {
     let ped = PlayerPedId();
     let pco = GetEntityCoords(ped);
 
-    for (let tr = 0; tr < types.length; tr++)
+    let veh = MyClosestVehicle(pco[0], pco[1], pco[2], 5.0);
+
+    if (DoesEntityExist(veh))
     {
-        let veh = GetClosestVehicle(pco[0], pco[1], pco[2], 5.0, 0, types[tr]);
-
-        if (DoesEntityExist(veh))
+        for (let i = 1; i < GetNumberOfVehicleDoors(veh); i++)
         {
-            for (let i = 1; i < GetNumberOfVehicleDoors(veh); i++)
+            let coord = GetEntryPositionOfDoor(veh, i);
+
+            if (Vdist2(pco[0], pco[1], pco[2], coord[0], coord[1], coord[2]) < 0.75 && !DoesEntityExist(GetPedInVehicleSeat(veh, i - 1)) && GetVehicleDoorLockStatus(veh) !== 2)
             {
-                let coord = GetEntryPositionOfDoor(veh, i);
+                if (names[i - 1] && !IsThisModelABike(GetEntityModel(veh)) && !IsThisModelABoat(GetEntityModel(veh)))
+                    HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer par la porte " + names[i - 1]);
+                else if (names2[i - 1] && IsThisModelABike(GetEntityModel(veh)) && IsThisModelABoat(GetEntityModel(veh)))
+                    HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer sur le siège " + names2[i - 1]);
+                else
+                    HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer par cette porte");
 
-                if (Vdist2(pco[0], pco[1], pco[2], coord[0], coord[1], coord[2]) < 1.0 && !DoesEntityExist(GetPedInVehicleSeat(veh, i)) && GetVehicleDoorLockStatus(veh) !== 2 && !IsPedInAnyVehicle(ped))
+                if (IsControlJustPressed(1, 38))
                 {
-                    if (names[i - 1] && !IsThisModelABike(GetEntityModel(veh)) && !IsThisModelABoat(GetEntityModel(veh)))
-                        HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer par la porte " + names[i - 1]);
-                    else if (names2[i - 1] && IsThisModelABike(GetEntityModel(veh)) && IsThisModelABoat(GetEntityModel(veh)))
-                        HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer sur le siège " + names2[i - 1]);
-                    else
-                        HelpText("Appuyez sur ~INPUT_CONTEXT~ pour rentrer par cette porte");
-
-                    if (IsControlJustPressed(1, 38))
-                    {
-                        TaskEnterVehicle(ped, veh, 10000, i - 1, 1.0, 1, 0);
-                    }
+                    TaskEnterVehicle(ped, veh, 10000, i - 1, 1.0, 1, 0);
                 }
             }
         }
